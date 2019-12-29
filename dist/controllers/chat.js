@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Conversation_1 = require("../models/Conversation");
 const User_1 = require("../models/User");
 const Message_1 = require("../models/Message");
+const sockets_1 = require("../helpers/sockets");
 const getConversations = (req, res, next) => {
     try {
         const userId = req.user.id;
@@ -71,40 +72,57 @@ const sendTextMessage = (req, res, next) => {
         const conversationId = req.body.conversationId || "0";
         const messageType = req.body.messageType || "";
         const shouldCreateNewConversation = req.body.newConversation || false;
+        const newConversationUserId = req.body.newConversationUserId || "";
+        console.log(req.body);
         if (messageType !== "text") {
             return res.status(400).json({ message: "Wrong message type." });
         }
-        Conversation_1.Conversation.findOne({ include: [{ model: User_1.User, through: { where: { userId: userId, conversationId: conversationId } } }] }).then(c => {
-            if (shouldCreateNewConversation) {
+        Conversation_1.Conversation.findAll({ include: [User_1.User] }).then(conversations => {
+            if (shouldCreateNewConversation && newConversationUserId) {
+                let c = conversations.find(c => c.users.find(u => String(u.id) === String(userId)) && c.users.find(u => String(u.id) === String(newConversationUserId)));
                 if (c) {
                     return res.status(409).json({ message: "Conversation with such id already exists" });
                 }
                 else {
-                    const newUserId = req.body.newConversationUserId;
-                    createConversationAndAddUsers(newUserId, userId).then(c => {
-                        addNewMessageToConversation(c.id, "text", userId, text, "").then(m => {
-                            return res.status(201).json({ createdNewConversation: true, newConversation: c, message: m });
-                        }).catch(err => {
-                            return res.status(500).json({ err });
+                    createConversationAndAddUsers(newConversationUserId, userId).then(c => {
+                        Conversation_1.Conversation.findByPk(c.id, { include: [User_1.User] }).then(c => {
+                            addNewMessageToConversation(c.id, "text", userId, text, "").then(m => {
+                                c.users.forEach(u => {
+                                    sockets_1.emitByUserIds("MESSAGE", {
+                                        message: m
+                                    }, u.id);
+                                });
+                                return res.status(201).json({ createdNewConversation: true, newConversation: c, message: m });
+                            }).catch(err => {
+                                console.log(err);
+                                return res.status(500).json({ err });
+                            });
                         });
                     });
                 }
             }
             else {
+                let c = conversations.find(c => String(c.id) === String(conversationId));
                 if (c) {
                     addNewMessageToConversation(c.id, "text", userId, text, "").then(m => {
+                        c.users.forEach(u => {
+                            sockets_1.emitByUserIds("MESSAGE", {
+                                message: m
+                            }, u.id);
+                        });
                         return res.status(201).json({ createdNewConversation: false, message: m });
                     }).catch(err => {
+                        console.log(err);
                         return res.status(500).json({ err });
                     });
                 }
                 else {
-                    return res.status(404).json({ message: "Not found conversation with such id" });
+                    return res.status(404).json({ message: "Conversation does not exist" });
                 }
             }
-        }).catch(e => {
-            console.log(e);
-            return res.status(500).json({ err: e });
+        }).catch(err => {
+            console.log(err);
+            return res.status(500).json({ error: err });
         });
     }
     catch (e) {
@@ -115,15 +133,18 @@ exports.sendTextMessage = sendTextMessage;
 const addNewMessageToConversation = (conversationId, messageType, senderId, text, srcPath) => __awaiter(void 0, void 0, void 0, function* () {
     return Message_1.Message.create({ messageType, text, senderId, conversationId, srcPath });
 });
-const createConversationAndAddUsers = (...userIds) => __awaiter(void 0, void 0, void 0, function* () {
+const createConversationAndAddUsers = (...userIds) => {
     return new Promise((resolve, reject) => {
         Conversation_1.Conversation.create().then((c) => __awaiter(void 0, void 0, void 0, function* () {
             try {
-                yield userIds.forEach((uid) => __awaiter(void 0, void 0, void 0, function* () {
-                    console.log("USERID: " + uid);
+                for (const uid of userIds) {
                     yield c.$add('users', uid);
-                }));
-                resolve(c);
+                }
+                c.save().then(result => {
+                    resolve(result);
+                }).catch(err => {
+                    reject(err);
+                });
             }
             catch (e) {
                 reject(e);
@@ -132,5 +153,5 @@ const createConversationAndAddUsers = (...userIds) => __awaiter(void 0, void 0, 
             reject(e);
         });
     });
-});
+};
 //# sourceMappingURL=chat.js.map
