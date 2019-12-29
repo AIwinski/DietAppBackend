@@ -40,11 +40,14 @@ const getMessages = (req, res, next) => {
             return res.status(400).json({ err: err });
         }
         const conversationId = req.params.id;
-        Conversation_1.Conversation.findOne({ include: [{ model: User_1.User, through: { where: { userId: userId, conversationId: conversationId } } }] }).then(c => {
+        Conversation_1.Conversation.findOne({ where: { id: conversationId }, include: [User_1.User] }).then(c => {
             if (!c) {
-                return res.status(404).json({ message: "Conversation with such id does not exist or user does not have access to it" });
+                return res.status(404).json({ message: "Conversation with such id does not exist" });
             }
-            c.$get('messages', { order: [['created_at', 'ASC']], offset: offset, limit: qty }).then(messages => {
+            if (!c.users.find(u => String(u.id) === String(userId))) {
+                return res.status(401).json({ message: "This user is not allowed to access this conversation" });
+            }
+            Message_1.Message.findAll({ where: { conversationId: c.id }, order: [['created_at', 'ASC']], offset: offset, limit: qty }).then(messages => {
                 return res.status(200).json({ messages });
             });
         }).catch(e => {
@@ -89,7 +92,7 @@ const sendTextMessage = (req, res, next) => {
                             addNewMessageToConversation(c.id, "text", userId, text, "").then(m => {
                                 c.users.forEach(u => {
                                     sockets_1.emitByUserIds("MESSAGE", {
-                                        message: m
+                                        createdNewConversation: true, newConversation: c, message: m
                                     }, u.id);
                                 });
                                 return res.status(201).json({ createdNewConversation: true, newConversation: c, message: m });

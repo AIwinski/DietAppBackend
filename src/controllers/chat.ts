@@ -32,11 +32,14 @@ const getMessages = (req: Request, res: Response, next: NextFunction) => {
 
         const conversationId = req.params.id;
 
-        Conversation.findOne({ include: [{ model: User, through: { where: { userId: userId, conversationId: conversationId } } }] }).then(c => {
+        Conversation.findOne({ where: { id: conversationId }, include: [User] }).then(c => {
             if (!c) {
-                return res.status(404).json({ message: "Conversation with such id does not exist or user does not have access to it" });
+                return res.status(404).json({ message: "Conversation with such id does not exist" });
             }
-            c.$get('messages', { order: [['created_at', 'ASC']], offset: offset, limit: qty }).then(messages => {
+            if (!c.users.find(u => String(u.id) === String(userId))) {
+                return res.status(401).json({ message: "This user is not allowed to access this conversation" })
+            }
+            Message.findAll({ where: { conversationId: c.id }, order: [['created_at', 'ASC']], offset: offset, limit: qty }).then(messages => {
                 return res.status(200).json({ messages });
             })
         }).catch(e => {
@@ -81,7 +84,7 @@ const sendTextMessage = (req: Request, res: Response, next: NextFunction) => {
                             addNewMessageToConversation(c.id, "text", userId, text, "").then(m => {
                                 c.users.forEach(u => {
                                     emitByUserIds("MESSAGE", {
-                                        message: m
+                                        createdNewConversation: true, newConversation: c, message: m
                                     }, u.id)
                                 });
                                 return res.status(201).json({ createdNewConversation: true, newConversation: c, message: m });
