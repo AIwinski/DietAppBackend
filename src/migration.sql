@@ -58,6 +58,7 @@ CREATE TABLE "Message" (
   conversation_id INTEGER NOT NULL,
   sender_id INTEGER NOT NULL,
   message_type VARCHAR,
+  initial_file_name VARCHAR,
   text VARCHAR,
   src_path VARCHAR,
   PRIMARY KEY(id, conversation_id, sender_id),

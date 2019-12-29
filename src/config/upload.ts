@@ -40,7 +40,7 @@ const file_storage = multer.diskStorage({
     filename: function (req, file, cb) {
         cb(
             null,
-            "file_" +
+            file.originalname.split(".")[0] + "__file_" +
             new Date().toISOString().replace(/:|\./g, "_") + "_" +
             randomstring.generate({ length: 12, charset: "alphabetic" }) +
             "." +

@@ -9,6 +9,9 @@ const Message_1 = require("../models/Message");
 const Profile_1 = require("../models/Profile");
 const Image_1 = require("../models/Image");
 const User_1 = require("../models/User");
+const sockets_1 = require("../helpers/sockets");
+const Conversation_1 = require("../models/Conversation");
+const chat_1 = require("./chat");
 const uploadFile = (req, res, next) => {
     upload_1.upload_file(req, res, err => {
         // @ts-ignore
@@ -26,16 +29,62 @@ const uploadFile = (req, res, next) => {
         }
         else {
             const userId = req.user.id;
-            const text = req.body.text;
-            const conversationId = req.body.conversationId;
-            if (!req.file) {
-                return res.status(500).json({ message: "File not uploaded error" });
+            const text = req.body.text || "";
+            const conversationId = req.body.conversationId || "0";
+            const messageType = req.body.messageType || "";
+            const shouldCreateNewConversation = req.body.newConversation || false;
+            const newConversationUserId = req.body.newConversationUserId || "";
+            if (messageType !== "file") {
+                return res.status(400).json({ message: "Wrong message type." });
             }
-            Message_1.Message.create({ conversationId, messageType: 'file', text, senderId: userId, srcPath: req.file.path }).then(m => {
-                return res.status(200).json({ message: m });
+            Conversation_1.Conversation.findAll({ include: [User_1.User] }).then(conversations => {
+                if (shouldCreateNewConversation && newConversationUserId) {
+                    let c = conversations.find(c => c.users.find(u => String(u.id) === String(userId)) && c.users.find(u => String(u.id) === String(newConversationUserId)));
+                    if (c) {
+                        return res.status(409).json({ message: "Conversation with such id already exists" });
+                    }
+                    else {
+                        chat_1.createConversationAndAddUsers(newConversationUserId, userId).then(c => {
+                            Conversation_1.Conversation.findByPk(c.id, { include: [User_1.User] }).then(c => {
+                                const originalName = req.file.filename.split("__file_")[0] + "." + req.file.filename.split(".")[1];
+                                chat_1.addNewMessageToConversation(c.id, "file", userId, text, req.file.path, originalName).then(m => {
+                                    c.users.forEach(u => {
+                                        sockets_1.emitByUserIds("MESSAGE", {
+                                            createdNewConversation: true, newConversation: c, message: m
+                                        }, u.id);
+                                    });
+                                    return res.status(201).json({ createdNewConversation: true, newConversation: c, message: m });
+                                }).catch(err => {
+                                    console.log(err);
+                                    return res.status(500).json({ err });
+                                });
+                            });
+                        });
+                    }
+                }
+                else {
+                    let c = conversations.find(c => String(c.id) === String(conversationId));
+                    if (c) {
+                        const originalName = req.file.filename.split("__file_")[0] + "." + req.file.filename.split(".")[1];
+                        chat_1.addNewMessageToConversation(c.id, "file", userId, text, req.file.path, originalName).then(m => {
+                            c.users.forEach(u => {
+                                sockets_1.emitByUserIds("MESSAGE", {
+                                    message: m
+                                }, u.id);
+                            });
+                            return res.status(201).json({ createdNewConversation: false, message: m });
+                        }).catch(err => {
+                            console.log(err);
+                            return res.status(500).json({ err });
+                        });
+                    }
+                    else {
+                        return res.status(404).json({ message: "Conversation does not exist" });
+                    }
+                }
             }).catch(err => {
                 console.log(err);
-                return res.status(500).json({ err: err });
+                return res.status(500).json({ error: err });
             });
         }
     });
@@ -117,9 +166,12 @@ exports.uploadImage = uploadImage;
 const downloadFile = (req, res, next) => {
     const messageId = req.params.messageId;
     const userId = req.user.id;
-    Message_1.Message.findOne({ where: { id: messageId } }).then(m => {
+    Message_1.Message.findOne({ where: { id: messageId }, include: [{ model: Conversation_1.Conversation, include: [User_1.User] }] }).then(m => {
         if (!m) {
             return res.status(404).json({ message: "File not found" });
+        }
+        if (!m.conversation.users.find(u => String(u.id) == userId)) {
+            return res.status(401).json({ message: "User is not allowed to access this file message" });
         }
         return res.download(m.srcPath);
     });

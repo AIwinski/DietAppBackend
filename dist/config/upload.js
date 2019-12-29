@@ -34,7 +34,7 @@ const file_storage = multer_1.default.diskStorage({
         cb(null, "./dist/uploads/files");
     },
     filename: function (req, file, cb) {
-        cb(null, "file_" +
+        cb(null, file.originalname.split(".")[0] + "__file_" +
             new Date().toISOString().replace(/:|\./g, "_") + "_" +
             randomstring_1.default.generate({ length: 12, charset: "alphabetic" }) +
             "." +

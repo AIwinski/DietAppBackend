@@ -76,20 +76,19 @@ const sendTextMessage = (req, res, next) => {
         const messageType = req.body.messageType || "";
         const shouldCreateNewConversation = req.body.newConversation || false;
         const newConversationUserId = req.body.newConversationUserId || "";
-        console.log(req.body);
         if (messageType !== "text") {
             return res.status(400).json({ message: "Wrong message type." });
         }
         Conversation_1.Conversation.findAll({ include: [User_1.User] }).then(conversations => {
             if (shouldCreateNewConversation && newConversationUserId) {
-                let c = conversations.find(c => c.users.find(u => String(u.id) === String(userId)) && c.users.find(u => String(u.id) === String(newConversationUserId)));
+                let c = conversations.find(c => c.users.find(u => String(u.id) === String(userId)) && c.users.find(u => String(u.id) === String(newConversationUserId) && String(u.id) !== String(newConversationUserId)));
                 if (c) {
                     return res.status(409).json({ message: "Conversation with such id already exists" });
                 }
                 else {
                     createConversationAndAddUsers(newConversationUserId, userId).then(c => {
                         Conversation_1.Conversation.findByPk(c.id, { include: [User_1.User] }).then(c => {
-                            addNewMessageToConversation(c.id, "text", userId, text, "").then(m => {
+                            addNewMessageToConversation(c.id, "text", userId, text, "", "").then(m => {
                                 c.users.forEach(u => {
                                     sockets_1.emitByUserIds("MESSAGE", {
                                         createdNewConversation: true, newConversation: c, message: m
@@ -107,7 +106,7 @@ const sendTextMessage = (req, res, next) => {
             else {
                 let c = conversations.find(c => String(c.id) === String(conversationId));
                 if (c) {
-                    addNewMessageToConversation(c.id, "text", userId, text, "").then(m => {
+                    addNewMessageToConversation(c.id, "text", userId, text, "", "").then(m => {
                         c.users.forEach(u => {
                             sockets_1.emitByUserIds("MESSAGE", {
                                 message: m
@@ -133,9 +132,10 @@ const sendTextMessage = (req, res, next) => {
     }
 };
 exports.sendTextMessage = sendTextMessage;
-const addNewMessageToConversation = (conversationId, messageType, senderId, text, srcPath) => __awaiter(void 0, void 0, void 0, function* () {
-    return Message_1.Message.create({ messageType, text, senderId, conversationId, srcPath });
+const addNewMessageToConversation = (conversationId, messageType, senderId, text, srcPath, initialFileName) => __awaiter(void 0, void 0, void 0, function* () {
+    return Message_1.Message.create({ messageType, text, senderId, conversationId, srcPath, initialFileName });
 });
+exports.addNewMessageToConversation = addNewMessageToConversation;
 const createConversationAndAddUsers = (...userIds) => {
     return new Promise((resolve, reject) => {
         Conversation_1.Conversation.create().then((c) => __awaiter(void 0, void 0, void 0, function* () {
@@ -144,7 +144,11 @@ const createConversationAndAddUsers = (...userIds) => {
                     yield c.$add('users', uid);
                 }
                 c.save().then(result => {
-                    resolve(result);
+                    Conversation_1.Conversation.findByPk(result.id, { include: [User_1.User] }).then(c => {
+                        resolve(c);
+                    }).catch(err => {
+                        reject(err);
+                    });
                 }).catch(err => {
                     reject(err);
                 });
@@ -157,4 +161,5 @@ const createConversationAndAddUsers = (...userIds) => {
         });
     });
 };
+exports.createConversationAndAddUsers = createConversationAndAddUsers;
 //# sourceMappingURL=chat.js.map

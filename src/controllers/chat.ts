@@ -67,7 +67,6 @@ const sendTextMessage = (req: Request, res: Response, next: NextFunction) => {
         const messageType = req.body.messageType || "";
         const shouldCreateNewConversation = req.body.newConversation || false;
         const newConversationUserId = req.body.newConversationUserId || "";
-        console.log(req.body)
 
         if (messageType !== "text") {
             return res.status(400).json({ message: "Wrong message type." })
@@ -75,13 +74,13 @@ const sendTextMessage = (req: Request, res: Response, next: NextFunction) => {
 
         Conversation.findAll({ include: [User] }).then(conversations => {
             if (shouldCreateNewConversation && newConversationUserId) {
-                let c = conversations.find(c => c.users.find(u => String(u.id) === String(userId)) && c.users.find(u => String(u.id) === String(newConversationUserId)));
+                let c = conversations.find(c => c.users.find(u => String(u.id) === String(userId)) && c.users.find(u => String(u.id) === String(newConversationUserId) && String(u.id) !== String(newConversationUserId)));
                 if (c) {
                     return res.status(409).json({ message: "Conversation with such id already exists" });
                 } else {
                     createConversationAndAddUsers(newConversationUserId, userId).then(c => {
                         Conversation.findByPk(c.id, { include: [User] }).then(c => {
-                            addNewMessageToConversation(c.id, "text", userId, text, "").then(m => {
+                            addNewMessageToConversation(c.id, "text", userId, text, "", "").then(m => {
                                 c.users.forEach(u => {
                                     emitByUserIds("MESSAGE", {
                                         createdNewConversation: true, newConversation: c, message: m
@@ -98,7 +97,7 @@ const sendTextMessage = (req: Request, res: Response, next: NextFunction) => {
             } else {
                 let c = conversations.find(c => String(c.id) === String(conversationId));
                 if (c) {
-                    addNewMessageToConversation(c.id, "text", userId, text, "").then(m => {
+                    addNewMessageToConversation(c.id, "text", userId, text, "", "").then(m => {
                         c.users.forEach(u => {
                             emitByUserIds("MESSAGE", {
                                 message: m
@@ -122,8 +121,8 @@ const sendTextMessage = (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
-const addNewMessageToConversation = async (conversationId: string, messageType: string, senderId: string, text: string, srcPath: string): Promise<Message> => {
-    return Message.create({ messageType, text, senderId, conversationId, srcPath });
+const addNewMessageToConversation = async (conversationId: string, messageType: string, senderId: string, text: string, srcPath: string, initialFileName: string): Promise<Message> => {
+    return Message.create({ messageType, text, senderId, conversationId, srcPath, initialFileName });
 }
 
 const createConversationAndAddUsers = (...userIds: string[]): Promise<Conversation> => {
@@ -134,7 +133,11 @@ const createConversationAndAddUsers = (...userIds: string[]): Promise<Conversati
                     await c.$add('users', uid)
                 }
                 c.save().then(result => {
-                    resolve(result);
+                    Conversation.findByPk(result.id, { include: [User] }).then(c => {
+                        resolve(c);
+                    }).catch(err => {
+                        reject(err)
+                    });
                 }).catch(err => {
                     reject(err)
                 });
@@ -147,4 +150,4 @@ const createConversationAndAddUsers = (...userIds: string[]): Promise<Conversati
     })
 }
 
-export { getMessages, getConversations, getInfo, sendTextMessage }
+export { getMessages, getConversations, getInfo, sendTextMessage, addNewMessageToConversation, createConversationAndAddUsers }

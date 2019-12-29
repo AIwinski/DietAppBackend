@@ -14,6 +14,9 @@ export class Message extends Model<Message> {
     @Column
     srcPath: string
 
+    @Column
+    initialFileName: string;
+
     @ForeignKey(() => User)
     @Column
     senderId: number;

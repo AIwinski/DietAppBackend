@@ -27,6 +27,10 @@ __decorate([
     __metadata("design:type", String)
 ], Message.prototype, "srcPath", void 0);
 __decorate([
+    sequelize_typescript_1.Column,
+    __metadata("design:type", String)
+], Message.prototype, "initialFileName", void 0);
+__decorate([
     sequelize_typescript_1.ForeignKey(() => User_1.User),
     sequelize_typescript_1.Column,
     __metadata("design:type", Number)
