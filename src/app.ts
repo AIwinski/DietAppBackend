@@ -43,7 +43,7 @@ const io = socketio.listen(server);
 let userSockets: Map<string, string> = new Map(); //socektid , userid
 
 io.on("connection", socket => {
-    //console.log("user connected to socket id: " + socket.id);
+    console.log("user connected to socket id: " + socket.id);
     socket.emit('SET_ID', socket.id);
 
     socket.on("disconnect", () => {
@@ -56,25 +56,26 @@ io.on("connection", socket => {
         console.log("test working");
     });
 
-    socket.on("answer", (data, userId) => {
-        console.log("answer")
-        emitByUserIds("answered", data, userId);
-    });
-
-    socket.on("offer", (data, userId) => {
-        console.log("offer")
-        emitByUserIds("offered", data, userId);
-    });
-
-    socket.on("send candidate", (data, userId) => {
-        console.log("send candidate")
-        emitByUserIds("candidate sent", data, userId);
-    });
-
     socket.on("WEBRTC_SEND", (data) => {
         console.log("WEBRTC SEND")
         console.log(data.id)
+        console.log(userSockets)
         emitByUserIds("WEBRTC", data, data.id);
+    })
+
+    socket.on("WEBRTC_JOIN", (data) => {
+        console.log("WEBRTC JOIN")
+        emitByUserIds("WEBRTC_JOINED", data, data.id);
+    })
+
+    socket.on("WEBRTC_LEAVE", (data) => {
+        console.log("WEBRTC LEAVE")
+        emitByUserIds("WEBRTC_LEFT", data, data.id);
+    })
+
+    socket.on("WEBRTC_CHANGE_STATUS", (data) => {
+        console.log("WEBRTC_CHANGE_STATUS")
+        emitByUserIds("WEBRTC_STATUS_CHANGED", data, data.id);
     })
 });
 
@@ -102,7 +103,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     if (webSocketId) {
         userSockets.set(webSocketId, userId);
     }
-    //console.log(Array.from(userSockets))
+    console.log(Array.from(userSockets))
     next();
 });
 

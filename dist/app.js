@@ -49,7 +49,7 @@ exports.io = io;
 let userSockets = new Map(); //socektid , userid
 exports.userSockets = userSockets;
 io.on("connection", socket => {
-    //console.log("user connected to socket id: " + socket.id);
+    console.log("user connected to socket id: " + socket.id);
     socket.emit('SET_ID', socket.id);
     socket.on("disconnect", () => {
         //console.log("user disconnected id: " + socket.id);
@@ -59,22 +59,23 @@ io.on("connection", socket => {
     socket.on("test", () => {
         console.log("test working");
     });
-    socket.on("answer", (data, userId) => {
-        console.log("answer");
-        sockets_1.emitByUserIds("answered", data, userId);
-    });
-    socket.on("offer", (data, userId) => {
-        console.log("offer");
-        sockets_1.emitByUserIds("offered", data, userId);
-    });
-    socket.on("send candidate", (data, userId) => {
-        console.log("send candidate");
-        sockets_1.emitByUserIds("candidate sent", data, userId);
-    });
     socket.on("WEBRTC_SEND", (data) => {
         console.log("WEBRTC SEND");
         console.log(data.id);
+        console.log(userSockets);
         sockets_1.emitByUserIds("WEBRTC", data, data.id);
+    });
+    socket.on("WEBRTC_JOIN", (data) => {
+        console.log("WEBRTC JOIN");
+        sockets_1.emitByUserIds("WEBRTC_JOINED", data, data.id);
+    });
+    socket.on("WEBRTC_LEAVE", (data) => {
+        console.log("WEBRTC LEAVE");
+        sockets_1.emitByUserIds("WEBRTC_LEFT", data, data.id);
+    });
+    socket.on("WEBRTC_CHANGE_STATUS", (data) => {
+        console.log("WEBRTC_CHANGE_STATUS");
+        sockets_1.emitByUserIds("WEBRTC_STATUS_CHANGED", data, data.id);
     });
 });
 app.use((req, res, next) => {
@@ -101,7 +102,7 @@ app.use((req, res, next) => {
     if (webSocketId) {
         userSockets.set(webSocketId, userId);
     }
-    //console.log(Array.from(userSockets))
+    console.log(Array.from(userSockets));
     next();
 });
 app.use(morgan_1.default("tiny"));
