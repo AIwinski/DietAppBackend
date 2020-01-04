@@ -5,7 +5,7 @@ const emitByUserIds = (event, data, ...userIds) => {
     let connectedUsers = [];
     userIds.forEach(userId => {
         app_1.userSockets.forEach((value, key) => {
-            if (value === userId) {
+            if (String(value) === String(userId)) {
                 connectedUsers.push(key);
             }
         });

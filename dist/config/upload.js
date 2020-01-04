@@ -14,7 +14,7 @@ const image_storage = multer_1.default.diskStorage({
             new Date().toISOString().replace(/:|\./g, "_") + "_" +
             randomstring_1.default.generate({ length: 12, charset: "alphabetic" }) +
             "." +
-            file.originalname.split(".")[1]);
+            file.originalname.substr(file.originalname.lastIndexOf('.') + 1));
     }
 });
 const avatar_storage = multer_1.default.diskStorage({
@@ -26,7 +26,7 @@ const avatar_storage = multer_1.default.diskStorage({
             new Date().toISOString().replace(/:|\./g, "_") + "_" +
             randomstring_1.default.generate({ length: 12, charset: "alphabetic" }) +
             "." +
-            file.originalname.split(".")[1]);
+            file.originalname.substr(file.originalname.lastIndexOf('.') + 1));
     }
 });
 const file_storage = multer_1.default.diskStorage({
@@ -38,7 +38,7 @@ const file_storage = multer_1.default.diskStorage({
             new Date().toISOString().replace(/:|\./g, "_") + "_" +
             randomstring_1.default.generate({ length: 12, charset: "alphabetic" }) +
             "." +
-            file.originalname.split(".")[1]);
+            file.originalname.substr(file.originalname.lastIndexOf('.') + 1));
     }
 });
 const imageFileFilter = (req, file, cb) => {

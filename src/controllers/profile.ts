@@ -3,6 +3,7 @@ import { getAllProfileData, deletePriceListElementById, addPriceListElementByPro
 import { Profile } from "../models/Profile";
 import { User } from "../models/User";
 import { Rating } from "../models/Rating";
+import { Op } from "sequelize";
 
 
 const getProfiles = (req: Request, res: Response, next: NextFunction) => {
@@ -163,4 +164,39 @@ const addReview = (req: Request, res: Response, next: NextFunction) => {
     })
 }
 
-export { getProfiles, addNewProfile, getProfileById, deletePriceListElement, addPriceListElement, updateProfile, deleteImage, resetAvatar, updateUser, addReview }
+const search = (req: Request, res: Response, next: NextFunction) => {
+    const phrase = req.params.phrase ? req.params.phrase.toLowerCase() : "";
+
+    if (!phrase) {
+        return res.status(400).json({ message: "Search phrase cannot be empty" });
+    }
+
+    Profile.findAll({ include: [User] }).then(profiles => {
+        let filtered: Profile[] = [];
+        profiles.forEach(p => {
+            if (p.city.toLowerCase().includes(phrase)) {
+                filtered.push(p)
+            }
+        });
+        profiles.forEach(p => {
+            if (p.owner.displayName.toLowerCase().includes(phrase)) {
+                filtered.push(p)
+            }
+        });
+        profiles.forEach(p => {
+            if (p.descr.toLowerCase().includes(phrase)) {
+                filtered.push(p)
+            }
+        });
+
+        const result = filtered.filter((item, pos) => {
+            return filtered.map(f => f.id).indexOf(item.id) === pos;
+        });
+
+        return res.status(200).json({ result: result.slice(0, 5) })
+    }).catch(err => {
+        return res.status(500).json({ error: err })
+    })
+}
+
+export { getProfiles, addNewProfile, getProfileById, deletePriceListElement, addPriceListElement, updateProfile, deleteImage, resetAvatar, updateUser, addReview, search }

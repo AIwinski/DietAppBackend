@@ -23,7 +23,8 @@ router.delete("/price-list-element/:id", passportJWTverify, ProfileController.de
 router.put("/user", passportJWTverify, ProfileController.updateUser);
 router.get("/avatar-reset", passportJWTverify, ProfileController.resetAvatar);
 router.post("/review", passportJWTverify, ProfileController.addReview);
+router.delete("/image/:id", passportJWTverify, ProfileController.deleteImage);
+router.get("/search/:phrase", ProfileController.search);
 router.get("/:id", ProfileController.getProfileById);
 router.put("/:id", passportJWTverify, ProfileController.updateProfile);
-router.delete("/image/:id", passportJWTverify, ProfileController.deleteImage);
 //# sourceMappingURL=profile.js.map

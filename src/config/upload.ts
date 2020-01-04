@@ -12,7 +12,7 @@ const image_storage = multer.diskStorage({
             new Date().toISOString().replace(/:|\./g, "_") + "_" +
             randomstring.generate({ length: 12, charset: "alphabetic" }) +
             "." +
-            file.originalname.split(".")[1]
+            file.originalname.substr(file.originalname.lastIndexOf('.') + 1)
         );
     }
 });
@@ -28,7 +28,7 @@ const avatar_storage = multer.diskStorage({
             new Date().toISOString().replace(/:|\./g, "_") + "_" +
             randomstring.generate({ length: 12, charset: "alphabetic" }) +
             "." +
-            file.originalname.split(".")[1]
+            file.originalname.substr(file.originalname.lastIndexOf('.') + 1)
         );
     }
 });
@@ -44,7 +44,7 @@ const file_storage = multer.diskStorage({
             new Date().toISOString().replace(/:|\./g, "_") + "_" +
             randomstring.generate({ length: 12, charset: "alphabetic" }) +
             "." +
-            file.originalname.split(".")[1]
+            file.originalname.substr(file.originalname.lastIndexOf('.') + 1)
         );
     }
 });

@@ -17,6 +17,7 @@ import * as authRoutes from "./routes/auth";
 import * as chatRoutes from "./routes/chat";
 import * as profileRoutes from "./routes/profile";
 import * as uploadRoutes from "./routes/upload";
+import { emitByUserIds } from "./helpers/sockets";
 
 sequelize
     .authenticate()
@@ -54,6 +55,27 @@ io.on("connection", socket => {
     socket.on("test", () => {
         console.log("test working");
     });
+
+    socket.on("answer", (data, userId) => {
+        console.log("answer")
+        emitByUserIds("answered", data, userId);
+    });
+
+    socket.on("offer", (data, userId) => {
+        console.log("offer")
+        emitByUserIds("offered", data, userId);
+    });
+
+    socket.on("send candidate", (data, userId) => {
+        console.log("send candidate")
+        emitByUserIds("candidate sent", data, userId);
+    });
+
+    socket.on("WEBRTC_SEND", (data) => {
+        console.log("WEBRTC SEND")
+        console.log(data.id)
+        emitByUserIds("WEBRTC", data, data.id);
+    })
 });
 
 app.use((req: Request, res: Response, next: NextFunction) => {

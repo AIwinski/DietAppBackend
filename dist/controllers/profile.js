@@ -161,4 +161,35 @@ const addReview = (req, res, next) => {
     });
 };
 exports.addReview = addReview;
+const search = (req, res, next) => {
+    const phrase = req.params.phrase ? req.params.phrase.toLowerCase() : "";
+    if (!phrase) {
+        return res.status(400).json({ message: "Search phrase cannot be empty" });
+    }
+    Profile_1.Profile.findAll({ include: [User_1.User] }).then(profiles => {
+        let filtered = [];
+        profiles.forEach(p => {
+            if (p.city.toLowerCase().includes(phrase)) {
+                filtered.push(p);
+            }
+        });
+        profiles.forEach(p => {
+            if (p.owner.displayName.toLowerCase().includes(phrase)) {
+                filtered.push(p);
+            }
+        });
+        profiles.forEach(p => {
+            if (p.descr.toLowerCase().includes(phrase)) {
+                filtered.push(p);
+            }
+        });
+        const result = filtered.filter((item, pos) => {
+            return filtered.map(f => f.id).indexOf(item.id) === pos;
+        });
+        return res.status(200).json({ result: result.slice(0, 5) });
+    }).catch(err => {
+        return res.status(500).json({ error: err });
+    });
+};
+exports.search = search;
 //# sourceMappingURL=profile.js.map

@@ -26,6 +26,7 @@ const authRoutes = __importStar(require("./routes/auth"));
 const chatRoutes = __importStar(require("./routes/chat"));
 const profileRoutes = __importStar(require("./routes/profile"));
 const uploadRoutes = __importStar(require("./routes/upload"));
+const sockets_1 = require("./helpers/sockets");
 sequelize_1.sequelize
     .authenticate()
     .then(() => {
@@ -57,6 +58,23 @@ io.on("connection", socket => {
     });
     socket.on("test", () => {
         console.log("test working");
+    });
+    socket.on("answer", (data, userId) => {
+        console.log("answer");
+        sockets_1.emitByUserIds("answered", data, userId);
+    });
+    socket.on("offer", (data, userId) => {
+        console.log("offer");
+        sockets_1.emitByUserIds("offered", data, userId);
+    });
+    socket.on("send candidate", (data, userId) => {
+        console.log("send candidate");
+        sockets_1.emitByUserIds("candidate sent", data, userId);
+    });
+    socket.on("WEBRTC_SEND", (data) => {
+        console.log("WEBRTC SEND");
+        console.log(data.id);
+        sockets_1.emitByUserIds("WEBRTC", data, data.id);
     });
 });
 app.use((req, res, next) => {
