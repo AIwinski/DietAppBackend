@@ -43,17 +43,12 @@ const io = socketio.listen(server);
 let userSockets: Map<string, string> = new Map(); //socektid , userid
 
 io.on("connection", socket => {
-    console.log("user connected to socket id: " + socket.id);
     socket.emit('SET_ID', socket.id);
 
     socket.on("disconnect", () => {
         //console.log("user disconnected id: " + socket.id);
         userSockets.delete(socket.id)
         //console.log(Array.from(userSockets))
-    });
-
-    socket.on("test", () => {
-        console.log("test working");
     });
 
     socket.on("WEBRTC_SEND", (data) => {
@@ -66,6 +61,12 @@ io.on("connection", socket => {
     socket.on("WEBRTC_JOIN", (data) => {
         console.log("WEBRTC JOIN")
         emitByUserIds("WEBRTC_JOINED", data, data.id);
+        for (let item of userSockets.values()) {
+            if (item === data.id) {
+                socket.emit("WEBRTC_JOINED", data)
+                break;
+            }
+        }
     })
 
     socket.on("WEBRTC_LEAVE", (data) => {
@@ -100,8 +101,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
             payload = null;
         }
     }
-    if (webSocketId) {
-        userSockets.set(webSocketId, userId);
+    if (webSocketId && userId) {
+        userSockets.set(String(webSocketId), String(userId));
     }
     console.log(Array.from(userSockets))
     next();
