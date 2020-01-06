@@ -25,6 +25,9 @@ router.get("/avatar-reset", passportJWTverify, ProfileController.resetAvatar);
 router.post("/review", passportJWTverify, ProfileController.addReview);
 router.delete("/image/:id", passportJWTverify, ProfileController.deleteImage);
 router.get("/search/:phrase", ProfileController.search);
+router.get("/count", ProfileController.count);
+router.get("/most-recent", ProfileController.mostRecent);
+router.get("/report", ProfileController.getReport);
 router.get("/:id", ProfileController.getProfileById);
 router.put("/:id", passportJWTverify, ProfileController.updateProfile);
 //# sourceMappingURL=profile.js.map

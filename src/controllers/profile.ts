@@ -4,6 +4,7 @@ import { Profile } from "../models/Profile";
 import { User } from "../models/User";
 import { Rating } from "../models/Rating";
 import { Op } from "sequelize";
+import { DailyReport } from "../models/DailyReport";
 
 
 const getProfiles = (req: Request, res: Response, next: NextFunction) => {
@@ -199,4 +200,80 @@ const search = (req: Request, res: Response, next: NextFunction) => {
     })
 }
 
-export { getProfiles, addNewProfile, getProfileById, deletePriceListElement, addPriceListElement, updateProfile, deleteImage, resetAvatar, updateUser, addReview, search }
+const count = (req: Request, res: Response, next: NextFunction) => {
+    Profile.count().then(result => {
+        return res.status(200).json({ count: result })
+    }).catch(err => {
+        return res.status(500).json({ error: err })
+    })
+}
+
+const mostRecent = (req: Request, res: Response, next: NextFunction) => {
+    Profile.findAll({ order: [['created_at', "ASC"]], limit: 3, include: [User, Rating] }).then(result => {
+        result.forEach(p => {
+            let rating = 0;
+            p.ratings.forEach(r => {
+                rating += r.ratingValue;
+            })
+            if (p.ratings.length) {
+                rating = rating / p.ratings.length;
+            }
+            p.totalRating = rating;
+        })
+        return res.status(200).json({ result: result })
+    }).catch(err => {
+        return res.status(500).json({ error: err })
+    });
+}
+
+const getReport = (req: Request, res: Response, next: NextFunction) => {
+    const oneDay = 86400000;
+    let days = 0;
+    try {
+        days = Number(req.query.days);
+    } catch {
+        days = 7;
+    }
+
+    const profileId = req.query.profile;
+    let report: any = [];
+    const from = Date.now() - (Date.now() % oneDay) - oneDay * days;
+
+    DailyReport.findAll({
+        where: {
+            profileId: profileId,
+            createdAt: {
+                [Op.gte]: from
+            }
+        },
+        order: [["createdAt", "ASC"]]
+    }).then(reports => {
+        for (let i = 0; i < days; i++) {
+            let currentDay = Date.now() - (Date.now() % oneDay) - oneDay * i;
+            let r = reports.find(r => r.createdAt >= currentDay && r.createdAt <= currentDay + oneDay);
+            let rep;
+            if (r) {
+                rep = {
+                    day: currentDay,
+                    summary: r.summary
+                }
+            } else {
+                rep = {
+                    day: currentDay,
+                    summary: 0
+                }
+            }
+            report.push(rep);
+        }
+        return res.status(200).json({ report: report });
+    }).catch(err => {
+        console.log(err)
+        return res.status(500).json({ error: err })
+    })
+}
+
+export {
+    getProfiles, count, addNewProfile, getProfileById,
+    deletePriceListElement, addPriceListElement, updateProfile,
+    deleteImage, resetAvatar, updateUser, addReview, search, mostRecent, getReport
+}

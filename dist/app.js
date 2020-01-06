@@ -64,8 +64,11 @@ io.on("connection", socket => {
     socket.on("WEBRTC_JOIN", (data) => {
         console.log("WEBRTC JOIN");
         sockets_1.emitByUserIds("WEBRTC_JOINED", data, data.id);
-        if (userSockets.has(data.id)) {
-            socket.emit("WEBRTC_JOINED", data);
+        for (let item of userSockets.values()) {
+            if (item === data.id) {
+                socket.emit("WEBRTC_JOINED", data);
+                break;
+            }
         }
     });
     socket.on("WEBRTC_LEAVE", (data) => {

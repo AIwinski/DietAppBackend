@@ -4,6 +4,8 @@ const profile_1 = require("../repository/profile");
 const Profile_1 = require("../models/Profile");
 const User_1 = require("../models/User");
 const Rating_1 = require("../models/Rating");
+const sequelize_1 = require("sequelize");
+const DailyReport_1 = require("../models/DailyReport");
 const getProfiles = (req, res, next) => {
     let alreadyFetched = parseInt(req.query.already_fetched) || 0;
     let batchSize = parseInt(req.query.batch_size) || 5;
@@ -192,4 +194,76 @@ const search = (req, res, next) => {
     });
 };
 exports.search = search;
+const count = (req, res, next) => {
+    Profile_1.Profile.count().then(result => {
+        return res.status(200).json({ count: result });
+    }).catch(err => {
+        return res.status(500).json({ error: err });
+    });
+};
+exports.count = count;
+const mostRecent = (req, res, next) => {
+    Profile_1.Profile.findAll({ order: [['created_at', "ASC"]], limit: 3, include: [User_1.User, Rating_1.Rating] }).then(result => {
+        result.forEach(p => {
+            let rating = 0;
+            p.ratings.forEach(r => {
+                rating += r.ratingValue;
+            });
+            if (p.ratings.length) {
+                rating = rating / p.ratings.length;
+            }
+            p.totalRating = rating;
+        });
+        return res.status(200).json({ result: result });
+    }).catch(err => {
+        return res.status(500).json({ error: err });
+    });
+};
+exports.mostRecent = mostRecent;
+const getReport = (req, res, next) => {
+    const oneDay = 86400000;
+    let days = 0;
+    try {
+        days = Number(req.query.days);
+    }
+    catch (_a) {
+        days = 7;
+    }
+    const profileId = req.query.profile;
+    let report = [];
+    const from = Date.now() - (Date.now() % oneDay) - oneDay * days;
+    DailyReport_1.DailyReport.findAll({
+        where: {
+            profileId: profileId,
+            createdAt: {
+                [sequelize_1.Op.gte]: from
+            }
+        },
+        order: [["createdAt", "ASC"]]
+    }).then(reports => {
+        for (let i = 0; i < days; i++) {
+            let currentDay = Date.now() - (Date.now() % oneDay) - oneDay * i;
+            let r = reports.find(r => r.createdAt >= currentDay && r.createdAt <= currentDay + oneDay);
+            let rep;
+            if (r) {
+                rep = {
+                    day: currentDay,
+                    summary: r.summary
+                };
+            }
+            else {
+                rep = {
+                    day: currentDay,
+                    summary: 0
+                };
+            }
+            report.push(rep);
+        }
+        return res.status(200).json({ report: report });
+    }).catch(err => {
+        console.log(err);
+        return res.status(500).json({ error: err });
+    });
+};
+exports.getReport = getReport;
 //# sourceMappingURL=profile.js.map
