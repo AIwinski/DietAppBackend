@@ -272,8 +272,10 @@ const getReport = (req: Request, res: Response, next: NextFunction) => {
     })
 }
 
+
+
 export {
     getProfiles, count, addNewProfile, getProfileById,
     deletePriceListElement, addPriceListElement, updateProfile,
-    deleteImage, resetAvatar, updateUser, addReview, search, mostRecent, getReport
+    deleteImage, resetAvatar, updateUser, addReview, search, mostRecent, getReport,
 }

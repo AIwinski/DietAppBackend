@@ -10,6 +10,10 @@ const UserConversation_1 = require("../models/UserConversation");
 const Rating_1 = require("../models/Rating");
 const Image_1 = require("../models/Image");
 const DailyReport_1 = require("../models/DailyReport");
+const Patient_1 = require("../models/Patient");
+const PatientDataSet_1 = require("../models/PatientDataSet");
+const PatientData_1 = require("../models/PatientData");
+const Note_1 = require("../models/Note");
 const sequelizeConfig = {
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
@@ -33,5 +37,6 @@ exports.sequelize = new sequelize_typescript_1.Sequelize(sequelizeConfig.databas
     models: [User_1.User, Profile_1.Profile, Message_1.Message, Conversation_1.Conversation, Image_1.Image, PriceListElement_1.PriceListElement, Rating_1.Rating, UserConversation_1.UserConversation],
     logging: false
 });
-exports.sequelize.addModels([User_1.User, Profile_1.Profile, Message_1.Message, Conversation_1.Conversation, Image_1.Image, PriceListElement_1.PriceListElement, Rating_1.Rating, UserConversation_1.UserConversation, DailyReport_1.DailyReport]);
+exports.sequelize.addModels([User_1.User, Profile_1.Profile, Message_1.Message, Conversation_1.Conversation, Image_1.Image, PriceListElement_1.PriceListElement, Rating_1.Rating,
+    UserConversation_1.UserConversation, DailyReport_1.DailyReport, Patient_1.Patient, PatientData_1.PatientData, PatientDataSet_1.PatientDataSet, Note_1.Note]);
 //# sourceMappingURL=sequelize.js.map

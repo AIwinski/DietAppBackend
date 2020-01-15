@@ -93,6 +93,58 @@ CREATE TABLE "DailyReport" (
   id SERIAL NOT NULL,
   profile_id INTEGER NOT NULL,
   summary INTEGER,
+  PRIMARY KEY(id),
+  created_at timestamp,
+  updated_at timestamp
+);
+CREATE TABLE "Patient" (
+  id SERIAL NOT NULL,
+  therapy_goal VARCHAR,
+  age INTEGER,
+  gender VARCHAR,
+  first_name VARCHAR,
+  last_name VARCHAR,
+  doctor_id INTEGER NOT NULL,
+  user_account_id INTEGER,
+  PRIMARY KEY(id),
+  FOREIGN KEY(doctor_id) REFERENCES "User"(id),
+  FOREIGN KEY(user_account_id) REFERENCES "User"(id),
+  created_at timestamp,
+  updated_at timestamp
+);
+CREATE TABLE "PatientDataSet" (
+  id SERIAL NOT NULL,
+  title VARCHAR,
+  descr VARCHAR,
+  last_name VARCHAR,
+  unit VARCHAR,
+  doctor_id INTEGER NOT NULL,
+  patient_id INTEGER NOT NULL,
+  PRIMARY KEY(id),
+  FOREIGN KEY(doctor_id) REFERENCES "User"(id),
+  FOREIGN KEY(patient_id) REFERENCES "Patient"(id),
+  created_at timestamp,
+  updated_at timestamp
+);
+CREATE TABLE "PatientData" (
+  id SERIAL NOT NULL,
+  data_type VARCHAR,
+  string_value VARCHAR,
+  number_value INTEGER,
+  data_set_id INTEGER NOT NULL,
+  PRIMARY KEY(id),
+  FOREIGN KEY(data_set_id) REFERENCES "PatientDataSet"(id),
+  created_at timestamp,
+  updated_at timestamp
+);
+CREATE TABLE "Note" (
+  id SERIAL NOT NULL,
+  content VARCHAR,
+  doctor_id INTEGER NOT NULL,
+  patient_id INTEGER NOT NULL,
+  PRIMARY KEY(id),
+  FOREIGN KEY(doctor_id) REFERENCES "User"(id),
+  FOREIGN KEY(patient_id) REFERENCES "Patient"(id),
   created_at timestamp,
   updated_at timestamp
 );
@@ -106,3 +158,7 @@ drop table "Profile";
 drop table "Conversation";
 drop table "User";
 drop table "DailyReport";
+drop table "Patient";
+drop table "PatientDataSet";
+drop table "PatientData";
+drop table "Note";

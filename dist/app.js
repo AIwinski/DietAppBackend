@@ -26,6 +26,8 @@ const authRoutes = __importStar(require("./routes/auth"));
 const chatRoutes = __importStar(require("./routes/chat"));
 const profileRoutes = __importStar(require("./routes/profile"));
 const uploadRoutes = __importStar(require("./routes/upload"));
+const patientRoutes = __importStar(require("./routes/patient"));
+const userRoutes = __importStar(require("./routes/user"));
 const sockets_1 = require("./helpers/sockets");
 sequelize_1.sequelize
     .authenticate()
@@ -113,10 +115,15 @@ app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
 app.use(compression_1.default());
 app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "uploads/images")));
+app.get("/", (req, res, next) => {
+    return res.status(200);
+});
 app.use("/auth", authRoutes.router);
 app.use("/chat", chatRoutes.router);
 app.use("/profile", profileRoutes.router);
 app.use("/upload", uploadRoutes.router);
+app.use("/patient", patientRoutes.router);
+app.use("/user", userRoutes.router);
 app.get("*", (req, res) => {
     return res.status(404).json({ message: "Route not found" });
 });

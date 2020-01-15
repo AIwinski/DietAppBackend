@@ -17,6 +17,8 @@ import * as authRoutes from "./routes/auth";
 import * as chatRoutes from "./routes/chat";
 import * as profileRoutes from "./routes/profile";
 import * as uploadRoutes from "./routes/upload";
+import * as patientRoutes from "./routes/patient";
+import * as userRoutes from "./routes/user";
 import { emitByUserIds } from "./helpers/sockets";
 
 sequelize
@@ -115,10 +117,18 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(compression())
 app.use("/uploads", express.static(path.join(__dirname, "uploads/images")));
 
+
+
+app.get("/", (req: Request, res: Response, next: NextFunction) => {
+    return res.status(200)
+});
+
 app.use("/auth", authRoutes.router);
 app.use("/chat", chatRoutes.router);
 app.use("/profile", profileRoutes.router);
 app.use("/upload", uploadRoutes.router);
+app.use("/patient", patientRoutes.router);
+app.use("/user", userRoutes.router);
 
 app.get("*", (req: Request, res: Response) => {
     return res.status(404).json({ message: "Route not found" })

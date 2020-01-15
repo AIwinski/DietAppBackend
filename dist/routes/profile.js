@@ -27,7 +27,7 @@ router.delete("/image/:id", passportJWTverify, ProfileController.deleteImage);
 router.get("/search/:phrase", ProfileController.search);
 router.get("/count", ProfileController.count);
 router.get("/most-recent", ProfileController.mostRecent);
-router.get("/report", ProfileController.getReport);
+router.get("/report", passportJWTverify, ProfileController.getReport);
 router.get("/:id", ProfileController.getProfileById);
 router.put("/:id", passportJWTverify, ProfileController.updateProfile);
 //# sourceMappingURL=profile.js.map

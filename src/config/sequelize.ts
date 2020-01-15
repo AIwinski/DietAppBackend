@@ -9,6 +9,10 @@ import { UserConversation } from '../models/UserConversation';
 import { Rating } from '../models/Rating';
 import { Image } from '../models/Image';
 import { DailyReport } from '../models/DailyReport';
+import { Patient } from '../models/Patient';
+import { PatientDataSet } from '../models/PatientDataSet';
+import { PatientData } from '../models/PatientData';
+import { Note } from '../models/Note';
 
 const sequelizeConfig = {
     username: process.env.DB_USERNAME,
@@ -35,4 +39,5 @@ export const sequelize = new Sequelize(sequelizeConfig.database, sequelizeConfig
     logging: false
 })
 
-sequelize.addModels([User, Profile, Message, Conversation, Image, PriceListElement, Rating, UserConversation, DailyReport]);
+sequelize.addModels([User, Profile, Message, Conversation, Image, PriceListElement, Rating,
+    UserConversation, DailyReport, Patient, PatientData, PatientDataSet, Note]);
