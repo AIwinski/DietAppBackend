@@ -1,9 +1,19 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Patient_1 = require("../models/Patient");
 const User_1 = require("../models/User");
 const Note_1 = require("../models/Note");
 const PatientDataSet_1 = require("../models/PatientDataSet");
+const PatientData_1 = require("../models/PatientData");
 const getPatientList = (req, res, next) => {
     const userId = req.user.id;
     if (req.user.accountType !== 'doctor') {
@@ -116,9 +126,16 @@ const getDataSets = (req, res, next) => {
             doctorId: userId,
             patientId: patientId,
         }
-    }).then((dataSets) => {
-        return res.status(200).json({ dataSets });
-    }).catch(err => {
+    }).then((dataSets) => __awaiter(void 0, void 0, void 0, function* () {
+        const allSets = yield Promise.all(dataSets.map((ds) => __awaiter(void 0, void 0, void 0, function* () {
+            const dataValues = yield PatientData_1.PatientData.findAll({ where: { dataSetId: ds.id } });
+            return {
+                dataValues: dataValues,
+                dataSet: ds
+            };
+        })));
+        return res.status(200).json({ dataSets: allSets });
+    })).catch(err => {
         console.log(err);
         return res.status(500).json({ error: err });
     });
@@ -127,11 +144,11 @@ exports.getDataSets = getDataSets;
 const addDataSet = (req, res, next) => {
     const userId = req.user.id;
     const patientId = req.params.id;
-    const { title, descr, unit } = req.body;
+    const { title, descr, unit, dataType } = req.body;
     PatientDataSet_1.PatientDataSet.create({
         doctorId: userId,
         patientId: patientId,
-        title, descr, unit
+        title, descr, unit, dataType
     }).then(dataSet => {
         return res.status(201).json({ dataSet });
     }).catch(err => {
@@ -156,4 +173,44 @@ const removeDataSet = (req, res, next) => {
     });
 };
 exports.removeDataSet = removeDataSet;
+const addDataValue = (req, res, next) => {
+    const userId = req.user.id;
+    PatientDataSet_1.PatientDataSet.findOne({
+        where: {
+            doctorId: userId
+        }
+    }).then(dataSet => {
+        if (!dataSet) {
+            return res.status(403).json({ message: "This doctor does not own data set with such id" });
+        }
+        const { dataSetId, dataValue, dateValue } = req.body;
+        PatientData_1.PatientData.create({
+            dataSetId, dataValue, dateValue
+        }).then(patientData => {
+            return res.status(201).json({ patientData });
+        }).catch(err => {
+            console.log(err);
+            return res.status(500).json({ error: err });
+        });
+    }).catch(err => {
+        console.log(err);
+        return res.status(500).json({ error: err });
+    });
+};
+exports.addDataValue = addDataValue;
+const removeDataValue = (req, res, next) => {
+    const userId = req.user.id;
+    const dataValueId = req.params.id;
+    PatientData_1.PatientData.destroy({
+        where: {
+            id: dataValueId
+        }
+    }).then(() => {
+        return res.status(200).json({ success: true });
+    }).catch(err => {
+        console.log(err);
+        return res.status(500).json({ error: err });
+    });
+};
+exports.removeDataValue = removeDataValue;
 //# sourceMappingURL=patient.js.map

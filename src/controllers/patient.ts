@@ -127,8 +127,15 @@ const getDataSets = (req: Request, res: Response, next: NextFunction) => {
             doctorId: userId,
             patientId: patientId,
         }
-    }).then((dataSets) => {
-        return res.status(200).json({ dataSets });
+    }).then(async (dataSets) => {
+        const allSets = await Promise.all(dataSets.map(async ds => {
+            const dataValues = await PatientData.findAll({ where: { dataSetId: ds.id } });
+            return {
+                dataValues: dataValues,
+                dataSet: ds
+            };
+        }))
+        return res.status(200).json({ dataSets: allSets });
     }).catch(err => {
         console.log(err)
         return res.status(500).json({ error: err })
@@ -139,12 +146,12 @@ const addDataSet = (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user.id;
     const patientId = req.params.id;
 
-    const { title, descr, unit } = req.body;
+    const { title, descr, unit, dataType } = req.body;
 
     PatientDataSet.create({
         doctorId: userId,
         patientId: patientId,
-        title, descr, unit
+        title, descr, unit, dataType
     }).then(dataSet => {
         return res.status(201).json({ dataSet })
     }).catch(err => {
@@ -182,10 +189,10 @@ const addDataValue = (req: Request, res: Response, next: NextFunction) => {
             return res.status(403).json({ message: "This doctor does not own data set with such id" })
         }
 
-        const { dataSetId, dataType, stringValue, numberValue } = req.body;
+        const { dataSetId, dataValue, dateValue } = req.body;
 
         PatientData.create({
-            dataSetId, dataType, stringValue, numberValue
+            dataSetId, dataValue, dateValue
         }).then(patientData => {
             return res.status(201).json({ patientData })
         }).catch(err => {

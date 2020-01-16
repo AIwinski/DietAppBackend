@@ -5,13 +5,10 @@ import { PatientDataSet } from './PatientDataSet'
 export class PatientData extends Model<PatientData> {
 
     @Column
-    dataType: string;
+    dataValue: string;
 
     @Column
-    stringValue: string;
-
-    @Column
-    numberValue: number;
+    dateValue: Date;
 
     @ForeignKey(() => PatientDataSet)
     @Column

@@ -27,6 +27,10 @@ __decorate([
     __metadata("design:type", String)
 ], PatientDataSet.prototype, "unit", void 0);
 __decorate([
+    sequelize_typescript_1.Column,
+    __metadata("design:type", String)
+], PatientDataSet.prototype, "dataType", void 0);
+__decorate([
     sequelize_typescript_1.ForeignKey(() => User_1.User),
     sequelize_typescript_1.Column,
     __metadata("design:type", Number)

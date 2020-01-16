@@ -116,8 +116,8 @@ CREATE TABLE "PatientDataSet" (
   id SERIAL NOT NULL,
   title VARCHAR,
   descr VARCHAR,
-  last_name VARCHAR,
   unit VARCHAR,
+  data_type VARCHAR,
   doctor_id INTEGER NOT NULL,
   patient_id INTEGER NOT NULL,
   PRIMARY KEY(id),
@@ -128,9 +128,8 @@ CREATE TABLE "PatientDataSet" (
 );
 CREATE TABLE "PatientData" (
   id SERIAL NOT NULL,
-  data_type VARCHAR,
-  string_value VARCHAR,
-  number_value INTEGER,
+  date_value timestamp,
+  data_value VARCHAR,
   data_set_id INTEGER NOT NULL,
   PRIMARY KEY(id),
   FOREIGN KEY(data_set_id) REFERENCES "PatientDataSet"(id),

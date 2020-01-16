@@ -16,15 +16,11 @@ let PatientData = class PatientData extends sequelize_typescript_1.Model {
 __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", String)
-], PatientData.prototype, "dataType", void 0);
+], PatientData.prototype, "dataValue", void 0);
 __decorate([
     sequelize_typescript_1.Column,
-    __metadata("design:type", String)
-], PatientData.prototype, "stringValue", void 0);
-__decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", Number)
-], PatientData.prototype, "numberValue", void 0);
+    __metadata("design:type", Date)
+], PatientData.prototype, "dateValue", void 0);
 __decorate([
     sequelize_typescript_1.ForeignKey(() => PatientDataSet_1.PatientDataSet),
     sequelize_typescript_1.Column,

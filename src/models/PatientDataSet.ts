@@ -14,6 +14,9 @@ export class PatientDataSet extends Model<PatientDataSet> {
     @Column
     unit: string;
 
+    @Column
+    dataType: string;
+
     @ForeignKey(() => User)
     @Column
     doctorId: number;
