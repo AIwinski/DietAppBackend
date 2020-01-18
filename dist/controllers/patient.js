@@ -128,7 +128,7 @@ const getDataSets = (req, res, next) => {
         }
     }).then((dataSets) => __awaiter(void 0, void 0, void 0, function* () {
         const allSets = yield Promise.all(dataSets.map((ds) => __awaiter(void 0, void 0, void 0, function* () {
-            const dataValues = yield PatientData_1.PatientData.findAll({ where: { dataSetId: ds.id } });
+            const dataValues = (yield PatientData_1.PatientData.findAll({ where: { dataSetId: ds.id } }));
             return {
                 dataValues: dataValues,
                 dataSet: ds
@@ -150,7 +150,12 @@ const addDataSet = (req, res, next) => {
         patientId: patientId,
         title, descr, unit, dataType
     }).then(dataSet => {
-        return res.status(201).json({ dataSet });
+        return res.status(201).json({
+            dataSet: {
+                dataSet: dataSet,
+                dataValues: []
+            }
+        });
     }).catch(err => {
         console.log(err);
         return res.status(500).json({ error: err });
@@ -160,16 +165,37 @@ exports.addDataSet = addDataSet;
 const removeDataSet = (req, res, next) => {
     const userId = req.user.id;
     const id = req.params.id;
-    PatientDataSet_1.PatientDataSet.destroy({
+    PatientDataSet_1.PatientDataSet.findOne({
         where: {
             doctorId: userId,
             id: id
         }
-    }).then(() => {
-        return res.status(200).json({ success: true });
-    }).catch(err => {
-        console.log(err);
-        return res.status(500).json({ error: err });
+    }).then(result => {
+        if (result) {
+            PatientData_1.PatientData.destroy({
+                where: {
+                    dataSetId: result.id
+                }
+            }).then(() => {
+                PatientDataSet_1.PatientDataSet.destroy({
+                    where: {
+                        doctorId: userId,
+                        id: id
+                    }
+                }).then(() => {
+                    return res.status(200).json({ success: true });
+                }).catch(err => {
+                    console.log(err);
+                    return res.status(500).json({ error: err });
+                });
+            }).catch(err => {
+                console.log(err);
+                return res.status(500).json({ error: err });
+            });
+        }
+        else {
+            return res.status(404).json({ message: "Data set not found" });
+        }
     });
 };
 exports.removeDataSet = removeDataSet;

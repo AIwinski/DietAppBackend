@@ -129,7 +129,7 @@ const getDataSets = (req: Request, res: Response, next: NextFunction) => {
         }
     }).then(async (dataSets) => {
         const allSets = await Promise.all(dataSets.map(async ds => {
-            const dataValues = await PatientData.findAll({ where: { dataSetId: ds.id } });
+            const dataValues = (await PatientData.findAll({ where: { dataSetId: ds.id } }));
             return {
                 dataValues: dataValues,
                 dataSet: ds
@@ -153,7 +153,12 @@ const addDataSet = (req: Request, res: Response, next: NextFunction) => {
         patientId: patientId,
         title, descr, unit, dataType
     }).then(dataSet => {
-        return res.status(201).json({ dataSet })
+        return res.status(201).json({
+            dataSet: {
+                dataSet: dataSet,
+                dataValues: []
+            }
+        })
     }).catch(err => {
         console.log(err)
         return res.status(500).json({ error: err })
@@ -164,17 +169,39 @@ const removeDataSet = (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user.id;
     const id = req.params.id;
 
-    PatientDataSet.destroy({
+    PatientDataSet.findOne({
         where: {
             doctorId: userId,
             id: id
         }
-    }).then(() => {
-        return res.status(200).json({ success: true });
-    }).catch(err => {
-        console.log(err)
-        return res.status(500).json({ error: err })
-    });
+    }).then(result => {
+        if (result) {
+            PatientData.destroy({
+                where: {
+                    dataSetId: result.id
+                }
+            }).then(() => {
+                PatientDataSet.destroy({
+                    where: {
+                        doctorId: userId,
+                        id: id
+                    }
+                }).then(() => {
+                    return res.status(200).json({ success: true });
+                }).catch(err => {
+                    console.log(err)
+                    return res.status(500).json({ error: err })
+                });
+            }).catch(err => {
+                console.log(err)
+                return res.status(500).json({ error: err })
+            });
+        } else {
+            return res.status(404).json({ message: "Data set not found" });
+        }
+    })
+
+
 }
 
 const addDataValue = (req: Request, res: Response, next: NextFunction) => {

@@ -15,7 +15,7 @@ let PatientData = class PatientData extends sequelize_typescript_1.Model {
 };
 __decorate([
     sequelize_typescript_1.Column,
-    __metadata("design:type", String)
+    __metadata("design:type", Number)
 ], PatientData.prototype, "dataValue", void 0);
 __decorate([
     sequelize_typescript_1.Column,

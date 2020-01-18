@@ -5,7 +5,7 @@ import { PatientDataSet } from './PatientDataSet'
 export class PatientData extends Model<PatientData> {
 
     @Column
-    dataValue: string;
+    dataValue: number;
 
     @Column
     dateValue: Date;

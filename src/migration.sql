@@ -129,7 +129,7 @@ CREATE TABLE "PatientDataSet" (
 CREATE TABLE "PatientData" (
   id SERIAL NOT NULL,
   date_value timestamp,
-  data_value VARCHAR,
+  data_value FLOAT,
   data_set_id INTEGER NOT NULL,
   PRIMARY KEY(id),
   FOREIGN KEY(data_set_id) REFERENCES "PatientDataSet"(id),
