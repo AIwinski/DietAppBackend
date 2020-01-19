@@ -173,7 +173,9 @@ const downloadFile = (req, res, next) => {
         if (!m.conversation.users.find(u => String(u.id) == userId)) {
             return res.status(401).json({ message: "User is not allowed to access this file message" });
         }
-        return res.download(m.srcPath);
+        const path = m.srcPath;
+        console.log(path);
+        return res.download(path);
     });
 };
 exports.downloadFile = downloadFile;

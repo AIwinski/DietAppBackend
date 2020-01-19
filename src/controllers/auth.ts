@@ -54,6 +54,8 @@ const register = (req: Request, res: Response, next: NextFunction) => {
                                 await createNewProfile(newUser.id);
                             }
 
+                            console.log("test")
+
                             const activationLink = config.CLIENT_URI + "/auth/verify/" + secretToken;
 
                             const html = `

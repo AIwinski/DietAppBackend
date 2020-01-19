@@ -15,18 +15,6 @@ const User_1 = require("./User");
 const Rating_1 = require("./Rating");
 const PriceListElement_1 = require("./PriceListElement");
 let Profile = class Profile extends sequelize_typescript_1.Model {
-    static countCompletionRate(instance) {
-        let completionRate = 0;
-        if (instance.descr.length > 0) {
-            completionRate += 1;
-        }
-        if (instance.city.length > 0) {
-            completionRate += 1;
-        }
-        // completionRate += instance.images.length;
-        // completionRate += instance.priceListElements.length;
-        instance.accountCompletionRate = completionRate;
-    }
 };
 __decorate([
     sequelize_typescript_1.Column,
@@ -69,12 +57,6 @@ __decorate([
     sequelize_typescript_1.HasMany(() => PriceListElement_1.PriceListElement),
     __metadata("design:type", Array)
 ], Profile.prototype, "priceListElements", void 0);
-__decorate([
-    sequelize_typescript_1.BeforeSave,
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Profile]),
-    __metadata("design:returntype", void 0)
-], Profile, "countCompletionRate", null);
 Profile = __decorate([
     sequelize_typescript_1.Table
 ], Profile);

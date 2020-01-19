@@ -10,7 +10,7 @@ const createNewProfile = async (userId: string) => {
     await Profile.create({
         ownerId: userId,
         popularity: 0,
-        totalRating: 0
+        totalRating: 0,
     });
 }
 
@@ -27,7 +27,7 @@ const findFilteredProfiles = async (batchSize: number, alreadyFetched: number, f
     const MINIMUM_ACCOUNT_COMPLETION_RATE = 0;
     return Profile.findAll({
         limit: batchSize, offset: alreadyFetched,
-        where: { ...filterObject, accountCompletionRate: { [Sequelize.Op.gte]: MINIMUM_ACCOUNT_COMPLETION_RATE } },
+        where: { ...filterObject },
         include: [Rating, User, Image, PriceListElement]
     });
 }

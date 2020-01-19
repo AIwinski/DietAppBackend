@@ -37,19 +37,4 @@ export class Profile extends Model<Profile> {
 
     @HasMany(() => PriceListElement)
     priceListElements: PriceListElement[];
-
-    @BeforeSave
-    static countCompletionRate(instance: Profile) {
-        let completionRate = 0;
-        if(instance.descr.length > 0){
-            completionRate += 1;
-        }
-        if(instance.city.length > 0){
-            completionRate += 1;
-        }
-        // completionRate += instance.images.length;
-        // completionRate += instance.priceListElements.length;
-
-        instance.accountCompletionRate = completionRate;
-    }
 }

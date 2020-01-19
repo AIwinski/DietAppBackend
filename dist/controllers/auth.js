@@ -56,6 +56,7 @@ const register = (req, res, next) => {
                         if (accountType === 'doctor') {
                             yield profile_1.createNewProfile(newUser.id);
                         }
+                        console.log("test");
                         const activationLink = config_1.config.CLIENT_URI + "/auth/verify/" + secretToken;
                         const html = `
                                         <b>Witaj w aplikacji</b>
