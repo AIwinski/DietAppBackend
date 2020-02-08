@@ -21,6 +21,8 @@ router.get("/avatar-reset", passportJWTverify, ProfileController.resetAvatar)
 
 router.post("/review", passportJWTverify, ProfileController.addReview);
 
+router.put("/review", passportJWTverify, ProfileController.updateReview);
+
 router.delete("/image/:id", passportJWTverify, ProfileController.deleteImage)
 
 router.get("/search/:phrase", ProfileController.search);

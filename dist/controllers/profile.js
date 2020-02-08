@@ -163,6 +163,24 @@ const addReview = (req, res, next) => {
     });
 };
 exports.addReview = addReview;
+const updateReview = (req, res, next) => {
+    const id = req.body.reviewId;
+    const ratingValue = req.body.ratingValue;
+    const content = req.body.content;
+    Rating_1.Rating.findByPk(id).then(r => {
+        if (!r) {
+            return res.status(404).json({ message: "Not found" });
+        }
+        r.ratingValue = ratingValue;
+        r.content = content;
+        r.save().then(result => {
+            return res.status(200).json({ rating: result });
+        });
+    }).catch(err => {
+        return res.status(500).json({ error: err });
+    });
+};
+exports.updateReview = updateReview;
 const search = (req, res, next) => {
     const phrase = req.params.phrase ? req.params.phrase.toLowerCase() : "";
     if (!phrase) {

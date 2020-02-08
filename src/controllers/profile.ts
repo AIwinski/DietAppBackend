@@ -165,6 +165,25 @@ const addReview = (req: Request, res: Response, next: NextFunction) => {
     })
 }
 
+
+const updateReview = (req: Request, res: Response, next: NextFunction) => {
+    const id = req.body.reviewId;
+    const ratingValue = req.body.ratingValue;
+    const content = req.body.content;
+    Rating.findByPk(id).then(r => {
+        if (!r) {
+            return res.status(404).json({ message: "Not found" });
+        }
+        r.ratingValue = ratingValue;
+        r.content = content;
+        r.save().then(result => {
+            return res.status(200).json({ rating: result })
+        })
+    }).catch(err => {
+        return res.status(500).json({ error: err })
+    })
+}
+
 const search = (req: Request, res: Response, next: NextFunction) => {
     const phrase = req.params.phrase ? req.params.phrase.toLowerCase() : "";
 
@@ -277,5 +296,5 @@ const getReport = (req: Request, res: Response, next: NextFunction) => {
 export {
     getProfiles, count, addNewProfile, getProfileById,
     deletePriceListElement, addPriceListElement, updateProfile,
-    deleteImage, resetAvatar, updateUser, addReview, search, mostRecent, getReport,
+    deleteImage, resetAvatar, updateUser, addReview, search, mostRecent, getReport, updateReview
 }
