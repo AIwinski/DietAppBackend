@@ -17,8 +17,8 @@ const signToken = (user: Express.User) => {
         {
             iss: "DietApp",
             sub: user.id,
-            iat: new Date().getTime(), // current time
-            exp: new Date().setDate(new Date().getDate() + 1) // current time + 1 day ahead
+            iat: new Date().getTime(),
+            exp: new Date().setDate(new Date().getDate() + 1)
         },
         process.env.JWT_KEY
     );
@@ -54,8 +54,6 @@ const register = (req: Request, res: Response, next: NextFunction) => {
                                 await createNewProfile(newUser.id);
                             }
 
-                            console.log("test")
-
                             const activationLink = config.CLIENT_URI + "/auth/verify/" + secretToken;
 
                             const html = `
@@ -63,6 +61,7 @@ const register = (req: Request, res: Response, next: NextFunction) => {
                                         <p>Kliknij w poniższy link aby dokończyć rejestrację!</p>
                                         <a href="${activationLink}">Aktywuj moje konto</a>
                                         <hr>`;
+                                        
                             sendEmail(config.APP_EMAIL_ADDRESS, newUser.email, "Dokończ rejestrację", html)
                                 .then(r => {
                                     return res.status(201).json({

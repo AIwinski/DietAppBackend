@@ -41,3 +41,6 @@ export const sequelize = new Sequelize(sequelizeConfig.database, sequelizeConfig
 
 sequelize.addModels([User, Profile, Message, Conversation, Image, PriceListElement, Rating,
     UserConversation, DailyReport, Patient, PatientData, PatientDataSet, Note]);
+
+
+    
