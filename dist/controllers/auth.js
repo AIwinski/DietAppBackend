@@ -27,7 +27,7 @@ const signToken = (user) => {
         iss: "DietApp",
         sub: user.id,
         iat: new Date().getTime(),
-        exp: new Date().setDate(new Date().getDate() + 1) // current time + 1 day ahead
+        exp: new Date().setDate(new Date().getDate() + 1)
     }, process.env.JWT_KEY);
 };
 const register = (req, res, next) => {
@@ -56,7 +56,6 @@ const register = (req, res, next) => {
                         if (accountType === 'doctor') {
                             yield profile_1.createNewProfile(newUser.id);
                         }
-                        console.log("test");
                         const activationLink = config_1.config.CLIENT_URI + "/auth/verify/" + secretToken;
                         const html = `
                                         <b>Witaj w aplikacji</b>

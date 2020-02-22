@@ -15,21 +15,22 @@ const createNewProfile = async (userId: string) => {
 }
 
 const findFilteredProfiles = async (batchSize: number, alreadyFetched: number, filters: any) => {
-    let filterObject = {};
-    if (filters.priceRange.min && filters.priceRange.max) {
-
-    }
-    if (filters.city && filters.city !== "All") {
-        // @ts-ignore
-        filterObject.city = filters.city;
-    }
-
-    const MINIMUM_ACCOUNT_COMPLETION_RATE = 0;
-    return Profile.findAll({
+    let profiles = await Profile.findAll({
         limit: batchSize, offset: alreadyFetched,
-        where: { ...filterObject },
         include: [Rating, User, Image, PriceListElement]
     });
+    profiles = profiles.filter(p => {
+        p.city === filters.city;
+    });
+    if(filters.services) {
+        profiles = profiles.filter(p => {
+            let result = false;
+            p.city === filters.city;
+        });
+    }
+    
+
+    return profiles;
 }
 
 const getAllProfileData = async (profileId: string) => {

@@ -25,19 +25,20 @@ const createNewProfile = (userId) => __awaiter(void 0, void 0, void 0, function*
 });
 exports.createNewProfile = createNewProfile;
 const findFilteredProfiles = (batchSize, alreadyFetched, filters) => __awaiter(void 0, void 0, void 0, function* () {
-    let filterObject = {};
-    if (filters.priceRange.min && filters.priceRange.max) {
-    }
-    if (filters.city && filters.city !== "All") {
-        // @ts-ignore
-        filterObject.city = filters.city;
-    }
-    const MINIMUM_ACCOUNT_COMPLETION_RATE = 0;
-    return Profile_1.Profile.findAll({
+    let profiles = yield Profile_1.Profile.findAll({
         limit: batchSize, offset: alreadyFetched,
-        where: Object.assign({}, filterObject),
         include: [Rating_1.Rating, User_1.User, Image_1.Image, PriceListElement_1.PriceListElement]
     });
+    profiles = profiles.filter(p => {
+        p.city === filters.city;
+    });
+    if (filters.services) {
+        profiles = profiles.filter(p => {
+            let result = false;
+            p.city === filters.city;
+        });
+    }
+    return profiles;
 });
 exports.findFilteredProfiles = findFilteredProfiles;
 const getAllProfileData = (profileId) => __awaiter(void 0, void 0, void 0, function* () {
