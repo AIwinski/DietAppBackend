@@ -19,15 +19,15 @@ const findFilteredProfiles = async (batchSize: number, alreadyFetched: number, f
         limit: batchSize, offset: alreadyFetched,
         include: [Rating, User, Image, PriceListElement]
     });
-    profiles = profiles.filter(p => {
-        p.city === filters.city;
-    });
-    if(filters.services) {
-        profiles = profiles.filter(p => {
-            let result = false;
-            p.city === filters.city;
-        });
-    }
+    // profiles = profiles.filter(p => {
+    //     p.city === filters.city;
+    // });
+    // if(filters.services) {
+    //     profiles = profiles.filter(p => {
+    //         let result = false;
+    //         p.city === filters.city;
+    //     });
+    // }
     
 
     return profiles;
