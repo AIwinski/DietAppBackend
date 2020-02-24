@@ -29,13 +29,24 @@ const findFilteredProfiles = (batchSize, alreadyFetched, filters) => __awaiter(v
         limit: batchSize, offset: alreadyFetched,
         include: [Rating_1.Rating, User_1.User, Image_1.Image, PriceListElement_1.PriceListElement]
     });
-    profiles = profiles.filter(p => {
-        p.city === filters.city;
-    });
-    if (filters.services) {
+    if (filters.city && filters.city !== 'All') {
+        profiles = profiles.filter(p => {
+            return p.city.toLocaleLowerCase().trim() == filters.city.toLocaleLowerCase().trim();
+        });
+    }
+    if (filters.services && filters.services.length > 0) {
         profiles = profiles.filter(p => {
             let result = false;
-            p.city === filters.city;
+            p.priceListElements.forEach(ple => {
+                filters.services.forEach((ser) => {
+                    //@ts-ignore
+                    console.log(ple.elementName + "  " + ser.label);
+                    if (ple.elementName.toLocaleLowerCase().trim() == ser.label.toLocaleLowerCase().trim()) {
+                        result = true;
+                    }
+                });
+            });
+            return result;
         });
     }
     return profiles;

@@ -19,16 +19,27 @@ const findFilteredProfiles = async (batchSize: number, alreadyFetched: number, f
         limit: batchSize, offset: alreadyFetched,
         include: [Rating, User, Image, PriceListElement]
     });
-    // profiles = profiles.filter(p => {
-    //     p.city === filters.city;
-    // });
-    // if(filters.services) {
-    //     profiles = profiles.filter(p => {
-    //         let result = false;
-    //         p.city === filters.city;
-    //     });
-    // }
+    if(filters.city && filters.city !== 'All') {
+        profiles = profiles.filter(p => {
+            return p.city.toLocaleLowerCase().trim() == filters.city.toLocaleLowerCase().trim();
+        });
+    }
     
+    if(filters.services && filters.services.length > 0) {
+        profiles = profiles.filter(p => {
+            let result = false;
+            p.priceListElements.forEach(ple => {
+                filters.services.forEach((ser: any) => {
+                    //@ts-ignore
+                    console.log(ple.elementName + "  " + ser.label)
+                    if(ple.elementName.toLocaleLowerCase().trim() == ser.label.toLocaleLowerCase().trim()) {
+                        result = true;
+                    }
+                })
+            })
+            return result;
+        });
+    }
 
     return profiles;
 }
