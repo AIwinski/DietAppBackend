@@ -70,7 +70,7 @@ const register = (req, res, next) => {
                             });
                         })
                             .catch(e => {
-                            return res.status(500).json({
+                            return res.status(201).json({
                                 error: e,
                                 message: "User created successfully but couldnt send email"
                             });
